@@ -3,7 +3,7 @@
 #include "sintatico.tab.h"
 #include "y.tab.h"
 
-
+int numero_da_linha=1;
 char lexema[30];
 
 
