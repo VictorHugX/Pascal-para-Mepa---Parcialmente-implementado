@@ -7,7 +7,6 @@
 #include "utils.c"
 #include "lexico.c"
 
-
 void yyerror(char *msg);
 int yywrap();
 %}
@@ -48,6 +47,8 @@ int yywrap();
 %token	S_MENOS
 %token	S_IGUAL
 %token	S_FECHAPAR
+%token  S_REPEAT
+%token  S_UNTIL
 
 %%
 programa
@@ -100,11 +101,11 @@ comando_sem_rotulo
 	| composto
 	| condicional
 	| repetitivo
+        | repetitivo2
 ;
 
 chamada_comando_escrita
-	: S_WRITE 
-	S_ABREPAR lista_de_expressoes S_FECHAPAR
+	: S_WRITE S_ABREPAR lista_de_expressoes S_FECHAPAR
 ;
 
 chamada_comando_leitura
@@ -114,8 +115,7 @@ chamada_comando_leitura
 
 lista_de_expressoes
 	: /* vazio */
-	| lista_de_expressoes S_VIRGULA 
-	  expressao
+	| lista_de_expressoes S_VIRGULA expressao
 		{ fprintf(arq_mep, "%s\n","IMPR"); }
 	| expressao
 		{ fprintf(arq_mep, "%s\n","IMPR"); }
@@ -238,19 +238,36 @@ repetitivo
 	 	
 ;
 
+repetitivo2
+	:S_REPEAT{
+		ROTULO++;
+		empilha(ROTULO);
+		fprintf(arq_mep,"L%d:NADA\n",ROTULO);
+	}
+
+	comando_sem_rotulo
+	
+	S_UNTIL
+
+	expressao{
+	 	fprintf(arq_mep,"DSVF L%d\n",aux);
+	 }
+;
+
 expressao
-	: expressao_simples S_IGUAL expressao_simples 
+	: 
+        | expressao_simples S_MAIOR expressao_simples
+		{ fprintf(arq_mep, "%s\n","CMMA"); }
+	| expressao_simples S_MENOR	expressao_simples
+		{ fprintf(arq_mep, "%s\n","CMME"); } 
+	| expressao_simples S_MAIGUAL 	expressao_simples
+		{ fprintf(arq_mep, "%s\n","CMAG"); } 
+	| expressao_simples S_MEIGUAL	expressao_simples
+		{ fprintf(arq_mep, "%s\n","CMEG"); } 
+        | expressao_simples S_IGUAL expressao_simples 
 		{ fprintf(arq_mep, "%s\n","CMIG"); } 
 	| expressao_simples S_DIFERENTE expressao_simples
 		{ fprintf(arq_mep, "%s\n","CMDG"); } 
-	| expressao_simples S_MENOR	expressao_simples
-		{ fprintf(arq_mep, "%s\n","CMME"); } 
-	| expressao_simples S_MAIOR	expressao_simples
-		{ fprintf(arq_mep, "%s\n","CMMA"); } 
-	| expressao_simples S_MEIGUAL	expressao_simples
-		{ fprintf(arq_mep, "%s\n","CMEG"); } 
-	| expressao_simples S_MAIGUAL 	expressao_simples
-		{ fprintf(arq_mep, "%s\n","CMAG"); } 
 	| expressao_simples
 ;
 
@@ -261,17 +278,14 @@ expressao_simples
 		{ fprintf(arq_mep, "%s\n","SUBT"); }
 	| expressao_simples S_OR termo
 		{ fprintf(arq_mep, "%s\n","DISJ"); }
-	| S_MAIS termo
-	| S_MENOS termo
-		{ fprintf(arq_mep, "%s\n","INVR"); }
-	| termo
+        | termo
 ;
 
 termo
-	: termo S_VEZES fator
-		{ fprintf(arq_mep, "%s\n","MULT"); } 
-	| termo S_DIV fator
+	: termo S_DIV fator
 		{ fprintf(arq_mep, "%s\n","DIVI"); } 
+        |termo S_VEZES fator
+		{ fprintf(arq_mep, "%s\n","MULT"); } 
 	| termo S_AND fator
 		{ fprintf(arq_mep, "%s\n","CONJ"); } 
 	| fator
@@ -289,9 +303,13 @@ fator
 	  		  fprintf(arq_mep, "%s %s %d\n", "CRVL", "", TSIMB[POS_SIMB].endereco);  		
 	  		}  
 	  	}
+
 	| S_NUMERO
 		{ fprintf(arq_mep, "%s %s %s\n","CRCT", "", lexema); } 
 	| S_ABREPAR expressao S_FECHAPAR
+	| S_MAIS fator
+	| S_MENOS fator
+		{ fprintf(arq_mep, "%s\n","INVR"); }
 	| S_NOT fator
 		{ fprintf(arq_mep, "%s\n","NEGA"); } 
 ;

@@ -1,17 +1,11 @@
 %{
 #include <stdio.h>
-#include "sintatico.tab.h"
-int numero_da_linha=1;
-char lexema[30];
-
-
-
+#include "sintatico.tab.h" 
 %}
 
 
 DIGIT	[0-9]
 ID	[a-z][a-z0-9]*
-
 
 %%
 program		{return(S_PROGRAM);}
@@ -19,6 +13,8 @@ if		{return (S_IF); }
 then		{return (S_THEN); }
 else		{return (S_ELSE); }
 while		{return(S_WHILE);}
+repeat          {return(S_REPEAT);}
+until           {return(S_UNTIL);}
 do		{return(S_DO);}
 var		{return(S_VAR);}
 begin		{return(S_BEGIN);}
@@ -43,20 +39,21 @@ read		{return(S_READ);}
 "<"		{return(S_MENOR);}
 ">="		{return(S_MAIGUAL);}
 "<="		{return(S_MEIGUAL);}
-"="		{return(S_IGUAL);}
+"="			{return(S_IGUAL);}
 "<>"		{return(S_DIFERENTE);}
-
-{DIGIT}+ 	{strcpy(lexema, yytext);
-                          return(S_NUMERO);}
-{ID}		{strcpy(lexema, yytext);
-		          return(S_IDENTIF);}
-		
+{DIGIT}+ 	{
+				strcpy(lexema,yytext);
+				return(S_NUMERO);
+			}
+{ID}		{
+				strcpy(lexema,yytext);
+				return(S_IDENTIF);
+			}
 [ \t]		/* faz nada. ignora espacos e tabulacao */
-[\n]		{numero_da_linha++;}
-
-<<EOF>>		{return (0);}
-.			{printf("\nErro lexico. SIMBOLO DESCONHECIDO: [%s]. LINHA: %d.\n",yytext,numero_da_linha);
+[\n]		{ numero_da_linha++; }
+<<EOF>>		{ return (0); }
+.			{			
+				printf("\nErro lexico. SIMBOLO DESCONHECIDO: [%s]. LINHA: %d.\n",yytext,numero_da_linha);
 				exit(1); 
 			}
 %%
-
