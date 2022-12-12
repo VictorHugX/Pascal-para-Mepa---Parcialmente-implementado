@@ -72,9 +72,12 @@ variaveis
 ;
 
 declaracoes_de_vars
-	: declaracoes_de_vars
-	lista_de_identificadores S_DOISPTOS S_IDENTIF S_PONTOVG
-	| lista_de_identificadores S_DOISPTOS S_IDENTIF S_PONTOVG
+	: declaracoes_de_vars lista_de_identificadores S_DOISPTOS S_IDENTIF 
+	{ inserir_tipo(lexema); } 
+	S_PONTOVG
+	| lista_de_identificadores S_DOISPTOS S_IDENTIF 
+	{ inserir_tipo(lexema); } 
+	S_PONTOVG
 ;
 
 lista_de_identificadores
@@ -169,9 +172,22 @@ atribuicao
 	  	}	
 	  S_ATRIBUI expressao
 		{
-			aux = desempilha();		  	
-			fprintf(arq_mep, "%s %s %d\n", "ARMZ", "", aux);
-		} 
+			aux = desempilha();
+			TabelaSimbolos* tabelaSimbolos = 0;
+			for(int i=0; i < TOPO_TSIMB; i++){
+			    if(TSIMB[i].endereco == aux){
+			         tabelaSimbolos = &TSIMB[i];
+			         break;
+			}
+			
+		}
+		if(tabelaSimbolos == 0){ printf("Simbolo Inválido\n"); exit(1);}
+		if(tabelaSimbolos->tipo != STIPO){
+		       printf("Erro linha %d: Nenhum tipo incompativel\n", numero_da_linha);
+		       exit(1);
+	}
+	fprintf(arq_mep, "%s %s %d\n", "ARMZ", "", aux);
+} 
 ;
 
 composto
@@ -302,12 +318,13 @@ fator
 	  		  printf("Variavel [%s] nao declarada!",lexema);
 	  		}
 	  		else{
+	  		  STIPO = TSIMB[POS_SIMB].tipo;
 	  		  fprintf(arq_mep, "%s %s %d\n", "CRVL", "", TSIMB[POS_SIMB].endereco);  		
 	  		}  
 	  	}
 	  	
 	| S_NUMERO
-		{ fprintf(arq_mep, "%s %s %s\n","CRCT", "", lexema); } 
+		{ STIPO = 'i'; fprintf(arq_mep, "%s %s %s\n","CRCT", "", lexema); } 
 	| S_ABREPAR expressao S_FECHAPAR
 	| S_MAIS fator
 	| S_MENOS fator

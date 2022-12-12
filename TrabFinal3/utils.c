@@ -3,6 +3,7 @@
 #define TAM_TSIMB 100
 #define TAM_PSEMA 100
 
+char STIPO = ' ';
 int TOPO_TSIMB 	   		= 0;
 int TOPO_PSEMA 	   		= 0;
 int NRO_POS_LOCAIS 		= 10000;//ultimo endereco alocado
@@ -75,6 +76,13 @@ void insere_variavel(char *ident){
 	insere_simbolo(&elem_tab);
 }
 
+void inserir_tipo (char *tipo){
+      for (int i=0; i <= CONTA_VARS; i++){
+          if(TSIMB[TOPO_TSIMB - i].tipo == 'u') {
+              TSIMB[TOPO_TSIMB - i].tipo = tipo[0];
+      }
+   }
+}
 //ELIMINA UMA DETERMINADA QUANTIDADE DE SIMBOLOS DA TABELA DE SIMBOLOS.
 void elimina_simbolos(int qtdade_de_simbolos){
 	if( (TOPO_TSIMB = qtdade_de_simbolos) < 0 ){

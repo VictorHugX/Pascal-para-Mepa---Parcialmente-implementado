@@ -1,6 +1,14 @@
 %{
 #include <stdio.h>
 #include "sintatico.tab.h" 
+
+void p_minusculas(char* s){
+while (*s){
+if(*s <= 90 && *s >= 65){
+*s+= 32;}
+s++;}
+}
+
 %}
 
 
@@ -47,6 +55,7 @@ read		{return(S_READ);}
 			}
 {ID}		{
 				strcpy(lexema,yytext);
+				p_minusculas(lexema);
 				return(S_IDENTIF);
 			}
 [ \t]		/* faz nada. ignora espacos e tabulacao */
